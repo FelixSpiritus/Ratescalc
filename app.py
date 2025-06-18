@@ -12,6 +12,8 @@ df = pd.read_excel(file_path)
 df['max_vol'] = pd.to_numeric(df['max_vol'].replace('--', 'inf'), errors='coerce').astype(float)
 df = df[['service', 'country', 'min_vol', 'max_vol', 'rates']]
 df = df.dropna()
+df['service'] = df['service'].str.strip().str.replace('"', '')
+df['country'] = df['country'].str.strip().str.replace('"', '').str.replace('\n', ' ')
 
 # Получаем уникальные услуги для выпадающего списка service
 services = df['service'].unique()
