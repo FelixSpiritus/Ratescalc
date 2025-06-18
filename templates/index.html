@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расчёт средней ставки</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        function updateCountries() {
+            var service = document.getElementById("service").value;
+            fetch('/get_countries/' + service)
+                .then(response => response.json())
+                .then(data => {
+                    var countrySelect = document.getElementById("country");
+                    countrySelect.innerHTML = '<option value="" disabled selected>Выберите страну</option>';  // Очистить текущий список
+                    data.countries.forEach(function(country) {
+                        var option = document.createElement("option");
+                        option.value = country;
+                        option.textContent = country;
+                        countrySelect.appendChild(option);
+                    });
+                });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Расчёт средней ставки</h1>
+        <form method="POST">
+            <label for="service">Услуга:</label>
+            <select id="service" name="service" required onchange="updateCountries()">
+                {% for service in services %}
+                    <option value="{{ service }}" {% if service == service_selected %}selected{% endif %}>{{ service }}</option>
+                {% endfor %}
+            </select><br>
+
+            <label for="country">Страна:</label>
+            <select id="country" name="country" required>
+                <option value="" disabled selected>Выберите страну</option>
+                {% for country in countries %}
+                    <option value="{{ country }}" {% if country == country_selected %}selected{% endif %}>{{ country }}</option>
+                {% endfor %}
+            </select><br>
+
+            <label for="traffic_volume">Объём трафика:</label>
+            <input type="number" id="traffic_volume" name="traffic_volume" value="{{ traffic_volume }}" required><br>
+
+            <button type="submit">Рассчитать</button>
+        </form>
+
+        {% if avg_rate %}
+        <h2>Средняя ставка: {{ avg_rate }}</h2>
+        {% endif %}
+    </div>
+</body>
+</html>
