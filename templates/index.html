@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Расчёт средней ставки</title>
+    <title>Average Rate Calculation</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script>
+        // Функция для обновления списка стран в зависимости от выбранной услуги
         function updateCountries() {
             var service = document.getElementById("service").value;
             fetch('/get_countries/' + service)
                 .then(response => response.json())
                 .then(data => {
                     var countrySelect = document.getElementById("country");
-                    countrySelect.innerHTML = '<option value="" disabled selected>Выберите страну</option>';  // Очистить текущий список
+                    countrySelect.innerHTML = '<option value="" disabled selected>Select a Country</option>';  // Очистить текущий список
                     data.countries.forEach(function(country) {
                         var option = document.createElement("option");
                         option.value = country;
@@ -20,36 +21,82 @@
                         countrySelect.appendChild(option);
                     });
                 });
+
+            // Очистить значение средней ставки при изменении поля
+            clearAvgRate(); 
+        }
+
+        // Функция для очистки средней ставки при изменении любого поля
+        function clearAvgRate() {
+            var avgRateElement = document.getElementById("avg_rate");
+            if (avgRateElement) {
+                avgRateElement.textContent = '';
+            }
         }
     </script>
+    <style>
+        /* Устанавливаем одинаковую высоту для всех полей ввода */
+        .form-input {
+            height: 40px;  
+            font-size: 16px;  
+            line-height: 40px; 
+        }
+
+        input[type="number"] {
+            height: 40px;
+            font-size: 16px;
+            line-height: 40px;  
+        }
+
+        select {
+            height: 40px;
+            font-size: 16px;
+            line-height: 40px;  
+        }
+
+        /* Уменьшаем высоту для поля "Traffic volume per month" */
+        #traffic_volume {
+            height: 20px;  
+            font-size: 16px;
+            line-height: 20px; 
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <h1>Расчёт средней ставки</h1>
+        <h1>WA rate calculator</h1>
         <form method="POST">
-            <label for="service">Услуга:</label>
-            <select id="service" name="service" required onchange="updateCountries()">
+            <label for="service">Choose template category</label>
+            <select id="service" name="service" class="form-input" required onchange="updateCountries(); clearAvgRate();">
                 {% for service in services %}
                     <option value="{{ service }}" {% if service == service_selected %}selected{% endif %}>{{ service }}</option>
                 {% endfor %}
             </select><br>
 
-            <label for="country">Страна:</label>
-            <select id="country" name="country" required>
-                <option value="" disabled selected>Выберите страну</option>
+            <label for="country">Choose WA region</label>
+            <select id="country" name="country" class="form-input" required onchange="clearAvgRate();">
+                <option value="" disabled selected>Select a Country</option>
                 {% for country in countries %}
                     <option value="{{ country }}" {% if country == country_selected %}selected{% endif %}>{{ country }}</option>
                 {% endfor %}
             </select><br>
 
-            <label for="traffic_volume">Объём трафика:</label>
-            <input type="number" id="traffic_volume" name="traffic_volume" value="{{ traffic_volume }}" required><br>
+            <label for="currency">Currency:</label>
+            <select id="currency" name="currency" class="form-input" required onchange="clearAvgRate();">
+                {% for currency in currencies %}
+                    <option value="{{ currency }}" {% if currency == currency_selected %}selected{% endif %}>{{ currency }}</option>
+                {% endfor %}
+            </select><br>
 
-            <button type="submit">Рассчитать</button>
+            <label for="traffic_volume">Traffic volume per month</label>
+            <input type="number" id="traffic_volume" name="traffic_volume" value="{{ traffic_volume }}" class="form-input" required onchange="clearAvgRate();"><br>
+
+            <button type="submit">Calculate</button>
         </form>
 
-        {% if avg_rate %}
-        <h2>Средняя ставка: {{ avg_rate }}</h2>
+        <!-- Здесь выводится средняя ставка только если она вычислена -->
+        {% if avg_rate is not none %}
+        <h2 id="avg_rate">Your rate is {{ avg_rate }} {{ currency }}</h2>
         {% endif %}
     </div>
 </body>
