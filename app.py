@@ -67,7 +67,7 @@ def index():
         
     return render_template('index.html', 
                            avg_rate=avg_rate, 
-                           currency=currency,
+                           currency_selected=currency_selected,
                            services=services, 
                            currencies=currencies,
                            countries=countries,
